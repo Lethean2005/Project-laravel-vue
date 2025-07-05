@@ -1,5 +1,6 @@
 // Composables
 import { createRouter, createWebHistory } from 'vue-router'
+import Orders from '@/views/Orders.vue';
 
 const routes = [
   {
@@ -14,6 +15,22 @@ const routes = [
         // which is lazy-loaded when the route is visited.
         component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
       },
+      {
+        path : '/order',
+        name : 'Orders',
+        component: ()=> import('@/views/Orders.vue')
+      },
+      {
+        path : '/finance',
+        name : 'Finance',
+        component : ()=> import ('@/views/Finance.vue')
+      },
+      {
+        path : '/restaurants',
+        name : 'restaurants',
+        component : ()=> import ('@/views/Restaurants.vue')
+      }
+      
     ],
   },
 ]

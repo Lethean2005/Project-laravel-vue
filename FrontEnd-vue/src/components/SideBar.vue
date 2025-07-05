@@ -1,36 +1,37 @@
 <template>
-  <v-navigation-drawer v-model="drawer" color="#2B2B2B" class="">
-    <div color="" class="pa-4">
-      <v-img
-        src="p1.webp"
-        alt="food"
-        width="150"
-        height="150"
-        class="ml-9"
-      ></v-img>
+  <v-navigation-drawer v-model="drawer" color="#2B2B2B">
+    <div class="pa-4">
+      <v-img src="p1.webp" alt="food" width="150" height="150" class="ml-9" />
     </div>
-    <v-card class="rounded-e-xl me" width="60" height="400" color="#545454">
-    </v-card>
+
+    <v-card class="rounded-e-xl me" width="60" height="400" color="#545454" />
+
     <v-list class="top">
-      <v-list-item
+      <router-link
         v-for="(item, i) in links"
         :key="i"
-        :value="item"
-        class="mb-5"
-        color="#FF6259"
-        variant="plain"
+        :to="item.to"
+        class="text-decoration-none"
+        style="color: inherit"
       >
-        <template v-slot:append="{ isActive }">
-          <div v-if="isActive" class="a"></div>
-        </template>
-
-        <template v-slot:prepend>
-          <v-icon :icon="item.icon"></v-icon>
-        </template>
-        <v-list-item-title v-text="item.text"></v-list-item-title>
-      </v-list-item>
+        <v-list-item
+          :value="item"
+          class="mb-5"
+          color="#FF6259"
+          variant="plain"
+        >
+          <template v-slot:append="{ isActive }">
+            <div v-if="isActive" class="a"></div>
+          </template>
+          <template v-slot:prepend>
+            <v-icon :icon="item.icon" />
+          </template>
+          <v-list-item-title v-text="item.text" />
+        </v-list-item>
+      </router-link>
     </v-list>
-    <v-div
+
+    <div
       style="
         position: absolute;
         bottom: 20px;
@@ -41,42 +42,30 @@
         text-align: center;
       "
     >
-      <v-btn
-        icon="mdi mdi-cog"
-        size="small"
-        class="mr-2"
-        color="#5F3B39"
-      ></v-btn>
-
+      <v-btn icon="mdi mdi-cog" size="small" class="mr-2" color="#5F3B39" />
       <v-badge dot color="#FF6259">
-        <v-btn icon="mdi mdi-bell" size="small" color="#5F3B39"></v-btn>
+        <v-btn icon="mdi mdi-bell" size="small" color="#5F3B39" />
       </v-badge>
-    </v-div>
+    </div>
   </v-navigation-drawer>
 </template>
+
 <script setup>
-import { ref } from "vue";
+import { ref } from 'vue'
+
+const drawer = ref(true)
+
 const links = [
-  { text: "Dashboard", icon: "mdi mdi-view-dashboard" },
-  { text: "Orders", icon: "mdi mdi-phone-classic" },
-  { text: "Restaurants", icon: "mdi mdi-map-marker-radius" },
-  { text: "Finance", icon: "mdi mdi-finance" },
-  { text: "Logout", icon: "mdi mdi-logout" },
-];
-
-const drawer = ref(null);
+  { text: "Dashboard", icon: "mdi mdi-view-dashboard", to: "/" },
+  { text: "Orders", icon: "mdi mdi-phone-classic", to: "/order" },
+  { text: "Restaurants", icon: "mdi mdi-map-marker-radius", to: "/restaurants" },
+  { text: "Finance", icon: "mdi mdi-finance", to: "/finance" },
+  { text: "Logout", icon: "mdi mdi-logout", to: "/logout" },
+]
 </script>
 
-<script>
-export default {
-  data: () => ({
-    cards: ["Today", "Yesterday"],
-    drawer: null,
-  }),
-};
-</script>
 <style scoped>
-.v-list-item.v-list-item--active.v-list-item--link.border.v-theme--light.text-red.v-list-item--density-default.v-list-item--one-line.v-list-item--variant-text {
+.v-list-item.v-list-item--active {
   color: white !important;
 }
 .top {
@@ -99,5 +88,4 @@ export default {
   background: linear-gradient(-90deg, #545454, #545454 50%, black 50%);
   border-radius: 50%;
 }
-
 </style>
