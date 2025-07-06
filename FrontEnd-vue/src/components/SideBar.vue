@@ -60,6 +60,7 @@ const links = [
   { text: "Orders", icon: "mdi mdi-phone-classic", to: "/order" },
   { text: "Restaurants", icon: "mdi mdi-map-marker-radius", to: "/restaurants" },
   { text: "Finance", icon: "mdi mdi-finance", to: "/finance" },
+  { text: "Products", icon: "mdi mdi-finance", to: "/products" },
   { text: "Logout", icon: "mdi mdi-logout", to: "/logout" },
 ]
 </script>
