@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -13,7 +14,12 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::select('id', 'name')->orderBy('id', 'DESC')->get();
+        $categories = Category::orderBy('id', 'DESC')->get()->map(function ($category) {
+            $cat = $category->toArray();
+            $cat['image_url'] = $category->image ? asset('storage/' . $category->image) : null;
+            return $cat;
+        });
+
         return response()->json([
             "message" => "List Category Successfully",
             "data" => $categories
@@ -26,16 +32,24 @@ class CategoryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
+            'name'  => 'required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
-        $categories = Category::create([
-            'name' => $request->name,
-        ]);
+        $data = ['name' => $request->name];
+
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('category_images', 'public');
+        }
+
+        $category = Category::create($data);
+
+        $cat = $category->toArray();
+        $cat['image_url'] = $category->image ? asset('storage/' . $category->image) : null;
 
         return response()->json([
             'message' => 'Category created successfully',
-            'category' => $categories,
+            'category' => $cat,
         ], 201);
     }
 
@@ -44,52 +58,86 @@ class CategoryController extends Controller
      */
     public function show(string $id)
     {
-        $categories = Category::select('id', 'name')->find($id);
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json([
+                "message" => "Category not found.",
+            ], 404);
+        }
+
+        $cat = $category->toArray();
+        $cat['image_url'] = $category->image ? asset('storage/' . $category->image) : null;
+
         return response()->json([
-            "message" => "Get Post Successfully",
-            "data" => $categories
+            "message" => "Get Category Successfully",
+            "data" => $cat
         ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-  public function update(Request $request, $id)
-{
-    // Validate incoming data
-    $request->validate([
-        'name' => 'required|string|max:255',
-    ]);
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name'  => 'sometimes|required|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        ]);
 
-    $categories = Category::find($id);
+        $category = Category::find($id);
 
-    if (!$categories) {
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found.'
+            ], 404);
+        }
+
+        $data = [];
+
+        if ($request->has('name')) {
+            $data['name'] = $request->name;
+        }
+
+        if ($request->hasFile('image')) {
+            if ($category->image) {
+                Storage::disk('public')->delete($category->image);
+            }
+            $data['image'] = $request->file('image')->store('category_images', 'public');
+        }
+
+        $category->update($data);
+
+        $cat = $category->toArray();
+        $cat['image_url'] = $category->image ? asset('storage/' . $category->image) : null;
+
         return response()->json([
-            'message' => 'Category not found.'
-        ], 404);
+            'message' => 'Category updated successfully.',
+            'category' => $cat
+        ], 200);
     }
-
-    // Update the category
-    $categories->update([
-        'name' => $request->name,
-    ]);
-
-    return response()->json([
-        'message' => 'Category updated successfully.',
-        'category' => $categories
-    ], 200);
-}
 
     /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
     {
-        $categories = Category::find($id);
-        $categories->delete();
+        $category = Category::find($id);
+
+        if (!$category) {
+            return response()->json([
+                'message' => 'Category not found.',
+            ], 404);
+        }
+
+        if ($category->image) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        $category->delete();
 
         return response()->json([
-            'message' => 'Delete Category Successfully',
+            'message' => 'Category deleted successfully',
             'data' => true
         ]);
     }

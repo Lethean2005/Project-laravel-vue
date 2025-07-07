@@ -8,33 +8,26 @@
     </div>
 
     <ul class="categorylist-ul">
-      <li
-        v-for="category in categories"
-        :key="category.id"
-        class="category-card"
-      >
+      <li v-for="category in categories" :key="category.id" class="category-card">
+        <!-- ✅ Show Image if Available -->
+        <img
+          v-if="category.image_url"
+          :src="category.image_url"
+          alt="Category Image"
+          class="category-image"
+        />
+
         <div class="category-card-content">
           <h3 class="category-card-title">{{ category.name }}</h3>
         </div>
 
         <div class="dropdown-wrapper">
-          <button class="dropdown-trigger" @click="toggleDropdown(category.id)">
-            ⋮
-          </button>
-          <div
-            v-if="openDropdown === category.id"
-            class="dropdown-menu"
-          >
-            <router-link
-              :to="`/categories/edit/${category.id}`"
-              class="dropdown-item"
-            >
+          <button class="dropdown-trigger" @click="toggleDropdown(category.id)">⋮</button>
+          <div v-if="openDropdown === category.id" class="dropdown-menu">
+            <router-link :to="`/categories/edit/${category.id}`" class="dropdown-item">
               ✏️ Edit
             </router-link>
-            <button
-              class="dropdown-item delete"
-              @click="handleDelete(category.id)"
-            >
+            <button class="dropdown-item delete" @click="handleDelete(category.id)">
               🗑️ Delete
             </button>
           </div>
@@ -53,7 +46,7 @@ import { useRouter } from "vue-router";
 const auth = useAuthStore();
 const categories = ref([]);
 const router = useRouter();
-const openDropdown = ref(null); // Track dropdown open state
+const openDropdown = ref(null);
 
 const fetchCategories = async () => {
   try {
@@ -69,8 +62,7 @@ const toggleDropdown = (id) => {
 };
 
 const handleDelete = async (id) => {
-  const confirmed = confirm("Are you sure you want to delete this category?");
-  if (confirmed) {
+  if (confirm("Are you sure you want to delete this category?")) {
     try {
       await api.delete(`/categories/${id}`);
       categories.value = categories.value.filter((cat) => cat.id !== id);
@@ -133,8 +125,8 @@ onMounted(() => {
 }
 .category-card {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
   background: rgba(255, 255, 255, 0.85);
   border-radius: 1.5rem;
   margin-bottom: 1.5rem;
@@ -149,12 +141,20 @@ onMounted(() => {
 }
 .category-card-content {
   flex: 1;
+  margin-left: 1rem;
 }
 .category-card-title {
   font-size: 1.25rem;
   font-weight: 600;
   color: #1e293b;
   margin-bottom: 0.5rem;
+}
+.category-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 1rem;
+  border: 1px solid #cbd5e1;
 }
 .dropdown-wrapper {
   position: relative;

@@ -14,10 +14,15 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all()->map(function ($product) {
-            $productArray = $product->toArray();
-            $productArray['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
-            return $productArray;
+        $products = Product::with('category')->get()->map(function ($product) {
+            $data = $product->toArray();
+            $data['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+            $data['category'] = $product->category ? [
+                'id' => $product->category->id,
+                'name' => $product->category->name,
+                'image_url' => $product->category->image ? asset('storage/' . $product->category->image) : null,
+            ] : null;
+            return $data;
         });
 
         return response()->json([
@@ -35,20 +40,28 @@ class ProductController extends Controller
             'name'        => 'required|string|max:255',
             'description' => 'nullable|string',
             'price'       => 'required|numeric',
+            'category_id' => 'required|exists:categories,id',
             'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            $imagePath = $request->file('image')->store('product_images', 'public');
-            $validated['image'] = $imagePath;
+            $validated['image'] = $request->file('image')->store('product_images', 'public');
         }
 
         $product = Product::create($validated);
 
-        $productData = $product->toArray();
-        $productData['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $data = $product->toArray();
+        $data['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $data['category'] = $product->category ? [
+            'id' => $product->category->id,
+            'name' => $product->category->name,
+            'image_url' => $product->category->image ? asset('storage/' . $product->category->image) : null,
+        ] : null;
 
-        return response()->json($productData, 201);
+        return response()->json([
+            'message' => 'Product created successfully',
+            'data' => $data
+        ], 201);
     }
 
     /**
@@ -56,13 +69,19 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::findOrFail($id);
-        $productArray = $product->toArray();
-        $productArray['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $product = Product::with('category')->findOrFail($id);
+
+        $data = $product->toArray();
+        $data['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $data['category'] = $product->category ? [
+            'id' => $product->category->id,
+            'name' => $product->category->name,
+            'image_url' => $product->category->image ? asset('storage/' . $product->category->image) : null,
+        ] : null;
 
         return response()->json([
             'message' => 'Product retrieved successfully',
-            'data' => $productArray
+            'data' => $data
         ]);
     }
 
@@ -77,26 +96,30 @@ class ProductController extends Controller
             'name'        => 'sometimes|required|string|max:255',
             'description' => 'nullable|string',
             'price'       => 'sometimes|required|numeric',
+            'category_id' => 'sometimes|required|exists:categories,id',
             'image'       => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         if ($request->hasFile('image')) {
-            // Delete old image if exists
             if ($product->image) {
                 Storage::disk('public')->delete($product->image);
             }
-
             $validated['image'] = $request->file('image')->store('product_images', 'public');
         }
 
         $product->update($validated);
 
-        $productArray = $product->toArray();
-        $productArray['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $data = $product->toArray();
+        $data['image_url'] = $product->image ? asset('storage/' . $product->image) : null;
+        $data['category'] = $product->category ? [
+            'id' => $product->category->id,
+            'name' => $product->category->name,
+            'image_url' => $product->category->image ? asset('storage/' . $product->category->image) : null,
+        ] : null;
 
         return response()->json([
             'message' => 'Product updated successfully',
-            'data' => $productArray
+            'data' => $data
         ]);
     }
 
