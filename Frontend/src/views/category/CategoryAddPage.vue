@@ -1,9 +1,27 @@
 <template>
   <div class="categoryadd-container">
     <h2 class="categoryadd-title">Add New Category</h2>
-    <input v-model="name" placeholder="Category Name" class="categoryadd-input" :disabled="loading" />
+
+    <!-- Category Name -->
+    <input
+      v-model="name"
+      placeholder="Category Name"
+      class="categoryadd-input"
+      :disabled="loading"
+    />
     <div v-if="nameError" style="color: red; font-size: 0.95rem;">{{ nameError }}</div>
+
+    <!-- Image Upload -->
+    <input
+      type="file"
+      @change="onFileChange"
+      accept="image/*"
+      class="categoryadd-input"
+      :disabled="loading"
+    />
+
     <div v-if="submitError" style="color: red; font-size: 0.95rem;">{{ submitError }}</div>
+
     <button @click="onSubmit" class="categoryadd-btn" :disabled="loading">
       {{ loading ? 'Saving...' : 'Save' }}
     </button>
@@ -17,38 +35,54 @@ import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 import api from '@/api'
 
-// Define validation schema
+// Validation schema
 const schema = yup.object({
   name: yup.string().required('Category name is required').min(2, 'Too short'),
 })
 
-// Setup VeeValidate form
 const { handleSubmit } = useForm({ validationSchema: schema })
 const { value: name, errorMessage: nameError } = useField('name')
 
-// Router
-const router = useRouter()
-
-// Loading and error state
+// States
 const loading = ref(false)
 const submitError = ref('')
+const image = ref(null)
+const router = useRouter()
 
-// Form submission handler
+const onFileChange = (event) => {
+  const file = event.target.files[0]
+  if (file && file.type.startsWith('image/')) {
+    image.value = file
+  } else {
+    image.value = null
+    alert('Please upload a valid image file')
+  }
+}
+
 const onSubmit = handleSubmit(async (values) => {
   loading.value = true
   submitError.value = ''
+
   try {
-    const response = await api.post('/categories', values)
+    const formData = new FormData()
+    formData.append('name', values.name)
+    if (image.value) {
+      formData.append('image', image.value)
+    }
+
+    const response = await api.post('/categories', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+
     console.log('API response:', response)
     router.push('/categories')
   } catch (error) {
     console.error('Failed to create category:', error)
     if (error?.response?.status === 401) {
-      // Redirect to login if unauthenticated
       router.push('/login')
-      return
+    } else {
+      submitError.value = error?.response?.data?.message || 'Failed to create category'
     }
-    submitError.value = error?.response?.data?.message || 'Failed to create category'
   } finally {
     loading.value = false
   }
@@ -56,6 +90,7 @@ const onSubmit = handleSubmit(async (values) => {
 </script>
 
 <style scoped>
+/* Keep your styles the same */
 .categoryadd-container {
   padding: 2.5rem 2rem;
   max-width: 1000px;
