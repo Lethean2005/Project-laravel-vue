@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\StudentController;
 use App\Http\Controllers\Api\TestingController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserProfileController;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
@@ -52,6 +53,9 @@ Route::get('/users/{id}', [UserController::class, 'show']);
 
 // Protected routes (require login)
 Route::middleware('auth:sanctum')->group(function () {
+    // User Profile
+    Route::get('/profile', [UserProfileController::class, 'show']);
+    Route::put('/profile', [UserProfileController::class, 'update']);
     // Post Management
     Route::post('/posts', [PostController::class, 'store']);
     Route::put('/posts/{id}', [PostController::class, 'update']);

@@ -21,7 +21,15 @@
         v-model="password"
         type="password"
         placeholder="Password"
-        class="w-full mb-6 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+        class="w-full mb-4 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
+      />
+
+      <!-- New file input for image -->
+      <input
+        type="file"
+        @change="onFileChange"
+        accept="image/*"
+        class="w-full mb-6"
       />
 
       <button
@@ -46,19 +54,33 @@ const auth = useAuthStore()
 const name = ref('')
 const email = ref('')
 const password = ref('')
+const profileImage = ref(null)  // Store the uploaded file
+
+const onFileChange = (event) => {
+  profileImage.value = event.target.files[0]  // Grab the selected file
+}
 
 const register = async () => {
   try {
-    const res = await api.post('/register', {
-      name: name.value,
-      email: email.value,
-      password: password.value
+    // Use FormData to send file + other data
+    const formData = new FormData()
+    formData.append('name', name.value)
+    formData.append('email', email.value)
+    formData.append('password', password.value)
+    if (profileImage.value) {
+      formData.append('profile_image', profileImage.value)
+    }
+
+    const res = await api.post('/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
     })
 
     const token = res.data.token
-    auth.login(token) // ✅ Use the store to login
+    auth.login(token)
 
-    router.push('/') // Redirect after registration
+    router.push('/')
   } catch (err) {
     alert('Register failed: ' + (err.response?.data?.message || err.message))
   }

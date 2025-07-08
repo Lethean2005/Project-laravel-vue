@@ -21,6 +21,9 @@ import ProductEdit from '@/views/Products/ProductEdit.vue'
 import ProductAdd from '@/views/Products/ProductAdd.vue'
 import ProductList from '@/views/Products/ProductList.vue'
 
+// Add import for Profile.vue
+import ProfilePage from '@/views/Profile.vue'
+
 const routes = [
   { path: '/', name: 'Home', component: HomePage },
   { path: '/about', name: 'About', component: AboutPage },
@@ -45,6 +48,9 @@ const routes = [
   { path: '/products', name:'ProductList', component:ProductList},
   { path: '/products/add', name:'ProductAdd', component:ProductAdd},
   { path: '/products/edit/:id', name:'ProductEdit', component:ProductEdit},
+
+  // Add profile route here with auth required
+  { path: '/profile', name: 'Profile', component: ProfilePage, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
